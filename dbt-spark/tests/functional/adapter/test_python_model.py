@@ -8,17 +8,27 @@ from dbt.tests.adapter.python_model.test_python_model import (
 from dbt.tests.adapter.python_model.test_spark import BasePySparkTests
 
 
-@pytest.mark.skip_profile(
-    "apache_spark", "spark_session", "databricks_sql_endpoint", "spark_http_odbc"
-)
+@pytest.mark.skip_profile("apache_spark", "databricks_sql_endpoint", "spark_http_odbc")
 class TestPythonModelSpark(BasePythonModelTests):
+    @pytest.fixture(scope="class")
+    def project_config_update(self, dbt_profile_target):
+        if dbt_profile_target["method"] == "session":
+            return {"models": {"+submission_method": "session", "+file_format": "parquet"}}
+        else:
+            return {}
+
     pass
 
 
-@pytest.mark.skip_profile(
-    "apache_spark", "spark_session", "databricks_sql_endpoint", "spark_http_odbc"
-)
+@pytest.mark.skip_profile("apache_spark", "databricks_sql_endpoint", "spark_http_odbc")
 class TestPySpark(BasePySparkTests):
+    @pytest.fixture(scope="class")
+    def project_config_update(self, dbt_profile_target):
+        if dbt_profile_target["method"] == "session":
+            return {"models": {"+submission_method": "session", "+file_format": "parquet"}}
+        else:
+            return {}
+
     def test_different_dataframes(self, project):
         """
         Test that python models are supported using dataframes from:
@@ -37,13 +47,14 @@ class TestPySpark(BasePySparkTests):
         assert len(results) == 3
 
 
-@pytest.mark.skip_profile(
-    "apache_spark", "spark_session", "databricks_sql_endpoint", "spark_http_odbc"
-)
+@pytest.mark.skip_profile("apache_spark", "databricks_sql_endpoint", "spark_http_odbc")
 class TestPythonIncrementalModelSpark(BasePythonIncrementalTests):
     @pytest.fixture(scope="class")
-    def project_config_update(self):
-        return {}
+    def project_config_update(self, dbt_profile_target):
+        if dbt_profile_target["method"] == "session":
+            return {"models": {"+submission_method": "session", "+file_format": "parquet"}}
+        else:
+            return {}
 
 
 models__simple_python_model = """
@@ -86,7 +97,6 @@ def model(dbt, spark):
 
 @pytest.mark.skip_profile(
     "apache_spark",
-    "spark_session",
     "databricks_sql_endpoint",
     "spark_http_odbc",
     "databricks_http_cluster",
@@ -104,6 +114,13 @@ class TestChangingSchemaSpark:
         unsupported and start experiencing issues.
         - See https://github.com/explosion/spaCy/issues/12659 for why we're pinning pydantic
     """
+
+    @pytest.fixture(scope="class")
+    def project_config_update(self, dbt_profile_target):
+        if dbt_profile_target["method"] == "session":
+            return {"models": {"+submission_method": "session", "+file_format": "parquet"}}
+        else:
+            return {}
 
     @pytest.fixture(scope="class")
     def models(self):

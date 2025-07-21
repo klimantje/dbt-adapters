@@ -10,6 +10,9 @@ from dbt_common.exceptions import DbtRuntimeError
 from dbt.adapters.spark import SparkCredentials
 from dbt.adapters.spark import __version__
 
+from pyspark.sql import SparkSession
+
+
 DEFAULT_POLLING_INTERVAL = 10
 SUBMISSION_LANGUAGE = "python"
 DEFAULT_TIMEOUT = 60 * 60 * 24
@@ -293,3 +296,24 @@ class AllPurposeClusterPythonJobHelper(BaseDatabricksHelper):
                     )
             finally:
                 context.destroy(context_id)
+
+
+class SessionHelper(BaseDatabricksHelper):
+
+    def check_credentials(self) -> None:
+        pass
+
+    def submit(self, compiled_code: str) -> Any:
+        builder = SparkSession.builder.enableHiveSupport()
+
+        for (
+            parameter,
+            value,
+        ) in self.credentials.server_side_parameters.items():
+            builder = builder.config(parameter, value)
+
+        spark_session = builder.getOrCreate()
+        try:
+            exec(compiled_code, {"spark": spark_session})
+        except Exception as e:
+            raise DbtRuntimeError(f"Python model failed with traceback as:\n{e}")

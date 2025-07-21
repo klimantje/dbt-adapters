@@ -10,7 +10,7 @@ This launches a virtual container or containers to test against.
 `dagger` will be installed as part of running `hatch run setup`.
 
 > [!NOTE]
-> `dbt-spark` has not yet been configured to install `dbt-adpaters` and `dbt-tests-adapter` as local, editable packages.
+> `dbt-spark` has not yet been configured to install `dbt-adapters` and `dbt-tests-adapter` as local, editable packages.
 
 ## Test profiles
 
